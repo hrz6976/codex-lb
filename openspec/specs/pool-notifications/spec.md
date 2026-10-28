@@ -1,7 +1,7 @@
 # pool-notifications Specification
 
 ## Purpose
-TBD - created by archiving change add-bark-pool-exhaustion-alerts. Update Purpose after archive.
+The system SHALL provide optional, securely configured Bark notifications when observed account quota is exhausted across the enabled pool, with bounded delivery and repeat suppression.
 
 ## Requirements
 
