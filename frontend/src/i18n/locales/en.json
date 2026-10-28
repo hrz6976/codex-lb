@@ -2046,5 +2046,10 @@
   "apiKeys.overview.recent.costByKey": "Cost by API Key · 7 days",
   "apiKeys.overview.recent.costByKeySubtitle": "Share of cost in the last 7 days",
   "apiKeys.overview.recent.tokensByKey": "Tokens by API Key · 7 days",
-  "apiKeys.overview.recent.tokensByKeySubtitle": "Share of tokens in the last 7 days"
+  "apiKeys.overview.recent.tokensByKeySubtitle": "Share of tokens in the last 7 days",
+  "settings.bark.title": "Bark notifications",
+  "settings.bark.description": "Notify when all enabled accounts exhaust their available quota. Missing or stale data delays alerts. The device URL is stored encrypted.",
+  "settings.bark.enabled": "Enabled",
+  "settings.bark.disabled": "Disabled",
+  "settings.bark.url": "Bark device URL"
 }

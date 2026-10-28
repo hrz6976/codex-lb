@@ -2046,5 +2046,10 @@
   "apiKeys.overview.recent.costByKey": "API 키별 비용 · 7일",
   "apiKeys.overview.recent.costByKeySubtitle": "최근 7일 비용 비중",
   "apiKeys.overview.recent.tokensByKey": "API 키별 토큰 · 7일",
-  "apiKeys.overview.recent.tokensByKeySubtitle": "최근 7일 토큰 비중"
+  "apiKeys.overview.recent.tokensByKeySubtitle": "최근 7일 토큰 비중",
+  "settings.bark.title": "Bark 알림",
+  "settings.bark.description": "활성 계정의 사용 가능한 할당량이 모두 소진되면 알립니다. 데이터가 없거나 오래되면 알림이 지연됩니다. 기기 URL은 암호화되어 저장됩니다.",
+  "settings.bark.enabled": "활성화됨",
+  "settings.bark.disabled": "비활성화됨",
+  "settings.bark.url": "Bark 기기 URL"
 }

@@ -23,6 +23,15 @@ class SettingsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def set_bark_url(self, encrypted: bytes | None) -> None:
+        settings = await self.get_or_create()
+        settings.bark_url_encrypted = encrypted
+        try:
+            await self._session.commit()
+        except StaleDataError as exc:
+            await self._session.rollback()
+            raise DashboardSettingsConflictError("Settings changed; reload and retry") from exc
+
     async def list_active_password_users(self) -> Sequence[DashboardUser]:
         """Accounts the TOTP requirements bind (roles loaded for the admin-level check)."""
 

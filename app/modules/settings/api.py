@@ -67,6 +67,8 @@ from app.modules.settings.schemas import (
     AccountProxyBindingRequest,
     AccountProxyBindingResponse,
     AdditionalQuotaPolicy,
+    BarkSettingsResponse,
+    BarkSettingsUpdateRequest,
     DashboardSettingsResponse,
     DashboardSettingsUpdateRequest,
     LocalLoginPolicyLiteral,
@@ -1675,3 +1677,22 @@ async def update_settings(
         )
     # end M5 conversation archive
     return _dashboard_settings_response(updated, principal=principal)
+
+
+@router.get("/notifications", response_model=BarkSettingsResponse)
+async def get_bark_settings(
+    _access=Depends(require_dashboard_permission(Permission.SECURITY_WRITE)),
+    context: SettingsContext = Depends(get_settings_context),
+) -> BarkSettingsResponse:
+    return BarkSettingsResponse(configured=await context.service.bark_configured())
+
+
+@router.put("/notifications", response_model=BarkSettingsResponse)
+async def update_bark_settings(
+    payload: BarkSettingsUpdateRequest,
+    _access=Depends(require_dashboard_permission(Permission.SECURITY_WRITE)),
+    context: SettingsContext = Depends(get_settings_context),
+) -> BarkSettingsResponse:
+    await context.service.set_bark_url(payload.bark_url.get_secret_value() if payload.bark_url is not None else None)
+    await get_settings_cache().invalidate()
+    return BarkSettingsResponse(configured=payload.bark_url is not None)

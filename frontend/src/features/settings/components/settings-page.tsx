@@ -1,3 +1,4 @@
+import { BarkSettings } from "./bark-settings";
 import { useState } from "react";
 import { Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -207,6 +208,7 @@ export function SettingsPage() {
               />
             ) : null}
 
+            {canWriteSecurity ? <BarkSettings disabled={controlsDisabled} /> : null}
             <TelemetrySettings disabled={controlsDisabled} />
 
             <AdvancedSettingsGroup

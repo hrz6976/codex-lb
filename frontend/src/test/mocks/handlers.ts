@@ -1333,6 +1333,8 @@ export const handlers = [
     return HttpResponse.json(createOauthCompleteResponse());
   }),
 
+  http.get("/api/settings/notifications", () => HttpResponse.json({ configured: false })),
+
   http.get("/api/settings", () => {
     return HttpResponse.json(state.settings);
   }),

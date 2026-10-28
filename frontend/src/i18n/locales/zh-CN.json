@@ -2046,5 +2046,10 @@
   "apiKeys.overview.recent.costByKey": "各 API 密钥费用 · 7 天",
   "apiKeys.overview.recent.costByKeySubtitle": "最近 7 天的费用占比",
   "apiKeys.overview.recent.tokensByKey": "各 API 密钥令牌 · 7 天",
-  "apiKeys.overview.recent.tokensByKeySubtitle": "最近 7 天的令牌占比"
+  "apiKeys.overview.recent.tokensByKeySubtitle": "最近 7 天的令牌占比",
+  "settings.bark.title": "Bark 通知",
+  "settings.bark.description": "所有启用账户的可用配额耗尽时通知。数据缺失或过期会延迟通知。设备 URL 将加密存储。",
+  "settings.bark.enabled": "已启用",
+  "settings.bark.disabled": "已禁用",
+  "settings.bark.url": "Bark 设备 URL"
 }

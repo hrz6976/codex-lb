@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from typing import Literal
+from urllib.parse import urlparse
 
-from pydantic import Field, StrictInt, field_validator
+from pydantic import Field, SecretStr, StrictInt, field_validator
 
 from app.modules.shared.schemas import DashboardModel
 
@@ -494,3 +495,33 @@ class UpstreamProxyAdminResponse(DashboardModel):
     endpoints: list[UpstreamProxyEndpointResponse]
     pools: list[UpstreamProxyPoolResponse]
     bindings: list[AccountProxyBindingResponse]
+
+
+class BarkSettingsResponse(DashboardModel):
+    configured: bool
+
+
+class BarkSettingsUpdateRequest(DashboardModel):
+    bark_url: SecretStr | None
+
+    @field_validator("bark_url")
+    @classmethod
+    def validate_bark_url(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
+        raw = value.get_secret_value()
+        parsed = urlparse(raw)
+        _ = parsed.port  # Validate the port before accepting a destination.
+        if (
+            any(character.isspace() for character in raw)
+            or parsed.scheme not in ("https", "http")
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+            or parsed.params
+            or not parsed.path.rstrip("/").rsplit("/", 1)[-1]
+        ):
+            raise ValueError("Bark URL requires an HTTP(S) server and device key without userinfo, query or fragment")
+        return value

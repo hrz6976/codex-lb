@@ -14,6 +14,7 @@ from app.core.plan_types import normalize_account_plan_type
 from app.core.resilience.toggles import resolve_resilience_toggles
 from app.core.scheduling.leader_election_handle import get_leader_election as _get_leader_election
 from app.core.usage import capacity_for_plan, default_window_minutes
+from app.core.usage.pool_notifications import BarkPoolNotifier
 from app.core.usage.refresh_policy import USAGE_REFRESH_INTERVAL_SECONDS
 from app.core.utils.time import naive_utc_to_epoch
 from app.db.models import Account, AccountLimitWarmup, AccountStatus, UsageHistory
@@ -171,6 +172,7 @@ class _BackgroundRequestLogsRepository:
 class UsageRefreshScheduler:
     interval_seconds: int
     enabled: bool
+    notifier: BarkPoolNotifier = field(default_factory=BarkPoolNotifier)
     _next_account_index: int = 0
     _task: asyncio.Task[None] | None = None
     _stop: asyncio.Event = field(default_factory=asyncio.Event)
@@ -318,6 +320,7 @@ class UsageRefreshScheduler:
                     )
                 if cycle_complete:
                     await _invalidate_usage_refresh_caches()
+                    await self.notifier.check()
             except Exception:
                 logger.exception("Usage refresh loop failed")
                 return float(self.interval_seconds)

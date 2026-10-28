@@ -23,6 +23,7 @@ from app.core.config.inheritable import resolve_inheritable as resolve_inheritab
 from app.core.config.settings import Settings, get_settings
 from app.core.config.spool_retention import OPERATION_SPOOL_RETENTION_SETTING
 from app.core.conversation_archive import CONVERSATION_ARCHIVE_SETTING
+from app.core.crypto import TokenEncryptor
 from app.core.resilience.toggles import RESILIENCE_TOGGLE_SETTINGS
 from app.db.models import DashboardSettings, LocalLoginPolicy
 from app.modules.dashboard_roles.service import resolve_role_grants
@@ -289,6 +290,13 @@ class TotpEnrollmentSummary:
 class SettingsService:
     def __init__(self, repository: SettingsRepository) -> None:
         self._repository = repository
+
+    async def bark_configured(self) -> bool:
+        return (await self._repository.get_or_create()).bark_url_encrypted is not None
+
+    async def set_bark_url(self, url: str | None) -> None:
+        encrypted = TokenEncryptor().encrypt(url) if url is not None else None
+        await self._repository.set_bark_url(encrypted)
 
     async def totp_enrollment(self, actor_user_id: str | None) -> TotpEnrollmentSummary:
         users = await self._repository.list_active_password_users()

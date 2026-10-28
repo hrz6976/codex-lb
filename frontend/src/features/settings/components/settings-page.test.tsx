@@ -9,6 +9,7 @@ import { useAuthStore } from "@/features/auth/hooks/use-auth";
 import type { DashboardSettings } from "@/features/settings/schemas";
 import {
   ADMIN_PERMISSIONS,
+  GUEST_PERMISSIONS,
   OPERATOR_PERMISSIONS,
   VIEWER_PERMISSIONS,
   createDashboardSettings,
@@ -296,6 +297,7 @@ describe("SettingsPage", () => {
     });
     renderSettings();
 
+    expect(screen.queryByText("Bark notifications")).not.toBeInTheDocument();
     expect(screen.queryByText("Read-only access")).not.toBeInTheDocument();
     expect(apiKeysSectionMock).toHaveBeenCalledWith(
       expect.objectContaining({ disabled: false, policyControlsDisabled: true }),
@@ -327,7 +329,7 @@ describe("SettingsPage", () => {
   });
 
   it("disables write-capable sections and hides restricted surfaces for read-only guests", async () => {
-    useAuthStore.setState({ canWrite: false });
+    useAuthStore.setState({ canWrite: false, permissions: GUEST_PERMISSIONS });
     // The guest query is disabled, so it usually has no data; the cached-data
     // case is covered separately below.
     useUpstreamProxyAdminMock.mockReturnValue({
@@ -340,6 +342,7 @@ describe("SettingsPage", () => {
 
     renderSettings();
 
+    expect(screen.queryByText("Bark notifications")).not.toBeInTheDocument();
     expect(screen.getByText("You are viewing the dashboard with read-only guest access. Admin controls are disabled.")).toBeInTheDocument();
     expect(screen.queryByText("Guest Access Settings")).not.toBeInTheDocument();
     expect(screen.queryByText("Password Settings")).not.toBeInTheDocument();

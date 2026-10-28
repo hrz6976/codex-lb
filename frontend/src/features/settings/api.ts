@@ -1,3 +1,4 @@
+import { BarkSettingsSchema } from "./schemas";
 import { del, get, post, put } from "@/lib/api-client";
 import {
   AccountProxyBindingRequestSchema,
@@ -98,4 +99,12 @@ export function putModelContextWindowOverride(slug: string, payload: unknown) {
 
 export function deleteModelContextWindowOverride(slug: string) {
   return del(`${MODEL_CONTEXT_WINDOW_OVERRIDES_PATH}/${encodeURIComponent(slug)}`, ModelContextWindowOverridesSchema);
+}
+
+export function getBarkSettings() {
+  return get("/api/settings/notifications", BarkSettingsSchema);
+}
+
+export function updateBarkSettings(barkUrl: string | null) {
+  return put("/api/settings/notifications", BarkSettingsSchema, { body: { barkUrl } });
 }

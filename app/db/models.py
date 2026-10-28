@@ -1301,6 +1301,8 @@ class DashboardRoleGrant(Base):
 
 
 class DashboardSettings(Base):
+    bark_url_encrypted: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+
     __tablename__ = "dashboard_settings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)

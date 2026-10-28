@@ -22,6 +22,7 @@ const RESTRICTED_PATHS = [
   "/api/api-keys/",
   "/api/api-keys",
   "/api/settings/upstream-proxy",
+  "/api/settings/notifications",
   "/api/settings/runtime/connect-address",
   "/api/sticky-sessions",
   "/api/oauth/status",

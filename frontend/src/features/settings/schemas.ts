@@ -658,3 +658,5 @@ export type TelemetrySnapshot = z.infer<typeof TelemetrySnapshotSchema>;
 export type TelemetrySnapshotEnvelope = z.infer<typeof TelemetrySnapshotEnvelopeSchema>;
 export type TelemetryConsent = z.infer<typeof TelemetryConsentSchema>;
 export type TelemetryConsentUpdateRequest = z.infer<typeof TelemetryConsentUpdateRequestSchema>;
+
+export const BarkSettingsSchema = z.object({ configured: z.boolean() });

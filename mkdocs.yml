@@ -61,6 +61,7 @@ nav:
   - Conversations: conversations.md
   - Usage Reporting: usage-reporting.md
   - Configuration: configuration.md
+  - Bark Notifications: bark-notifications.md
   - Anonymous Telemetry: telemetry.md
   - Authentication: authentication.md
   - Company Sign-In: sso.md
