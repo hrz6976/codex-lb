@@ -161,7 +161,7 @@ describe("ApisPage", () => {
 		expect(screen.getByRole("status")).toHaveTextContent(
 			"Sign in as an administrator to view and manage API keys.",
 		);
-		expect(hookMocks.useApiKeys).toHaveBeenCalledWith({ enabled: false });
+		expect(hookMocks.useApiKeys).toHaveBeenCalledWith({ enabled: false, usageWindow: "7d" });
 		// Even with a (stale) cached key list, per-key queries stay idle.
 		expect(hookMocks.useApiKeyTrends).toHaveBeenCalledWith("key_1", { enabled: false });
 		expect(hookMocks.useApiKeyUsage7Day).toHaveBeenCalledWith("key_1", { enabled: false });
@@ -181,7 +181,7 @@ describe("ApisPage", () => {
 
 		renderApisPage();
 
-		expect(hookMocks.useApiKeys).toHaveBeenCalledWith({ enabled: true });
+		expect(hookMocks.useApiKeys).toHaveBeenCalledWith({ enabled: true, usageWindow: "7d" });
 		expect(screen.getByText("Overview")).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "Create API Key" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "Actions" })).not.toBeInTheDocument();
@@ -191,7 +191,7 @@ describe("ApisPage", () => {
 	it("enables the API key queries for writers", () => {
 		renderApisPage();
 
-		expect(hookMocks.useApiKeys).toHaveBeenCalledWith({ enabled: true });
+		expect(hookMocks.useApiKeys).toHaveBeenCalledWith({ enabled: true, usageWindow: "7d" });
 		expect(hookMocks.useApiKeyTrends).toHaveBeenCalledWith("key_1", { enabled: true });
 		expect(screen.getByRole("button", { name: "Create API Key" })).toBeInTheDocument();
 	});
@@ -238,10 +238,19 @@ describe("ApisPage", () => {
 		});
 
 		expect(screen.getByText("Overview")).toBeInTheDocument();
-		expect(screen.getByText("Lifetime Cost by API Key")).toBeInTheDocument();
-		expect(screen.getByText("Lifetime Tokens by API Key")).toBeInTheDocument();
+		expect(screen.getByText("Cost by API Key · 7 days")).toBeInTheDocument();
+		expect(screen.getByText("Tokens by API Key · 7 days")).toBeInTheDocument();
 		expect(
 			within(screen.getByTestId("api-keys-overview-cost-panel")).getByText("Secondary key"),
 		).toBeInTheDocument();
 	});
+});
+
+it("switches the overview from 7 days to lifetime with a scoped query", async () => {
+    const user = userEvent.setup();
+    renderApisPage();
+    expect(screen.getByRole("button", { name: "7 days" })).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByRole("button", { name: "Lifetime" }));
+    expect(hookMocks.useApiKeys).toHaveBeenLastCalledWith({ enabled: true, usageWindow: "lifetime" });
+    expect(screen.getByText("Lifetime Cost by API Key")).toBeInTheDocument();
 });

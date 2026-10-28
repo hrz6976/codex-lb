@@ -2036,5 +2036,15 @@
   "organisation.automaticAccounts.secret.warning": "Copy it now. It is shown once and cannot be read again; if you lose it, replace the credential.",
   "organisation.automaticAccounts.secret.copy": "Copy credential",
   "organisation.errors.scim_token_not_found": "That credential no longer exists.",
-  "accounts.importDialog.selectedFiles": "Selected files"
+  "accounts.importDialog.selectedFiles": "Selected files",
+  "apiKeys.overview.window.7d": "7 days",
+  "apiKeys.overview.window.lifetime": "Lifetime",
+  "apiKeys.overview.usageWindow": "Usage window",
+  "apiKeys.overview.recent.lifetimeRequests": "Requests · 7 days",
+  "apiKeys.overview.recent.lifetimeCost": "Cost · 7 days",
+  "apiKeys.overview.recent.lifetimeCostMeta": "Estimated API cost in the last 7 days",
+  "apiKeys.overview.recent.costByKey": "Cost by API Key · 7 days",
+  "apiKeys.overview.recent.costByKeySubtitle": "Share of cost in the last 7 days",
+  "apiKeys.overview.recent.tokensByKey": "Tokens by API Key · 7 days",
+  "apiKeys.overview.recent.tokensByKeySubtitle": "Share of tokens in the last 7 days"
 }

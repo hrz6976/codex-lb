@@ -258,8 +258,13 @@ class ApiKeysRepository:
         )
         return list(result.scalars().all())
 
-    async def list_usage_summary_by_key(self, api_key_ids: list[str] | None = None) -> dict[str, ApiKeyUsageSummary]:
-        folded, watermark = await read_api_key_rollup_state(self._session, api_key_ids)
+    async def list_usage_summary_by_key(
+        self, api_key_ids: list[str] | None = None, *, since: datetime | None = None, until: datetime | None = None
+    ) -> dict[str, ApiKeyUsageSummary]:
+        if since is None:
+            folded, watermark = await read_api_key_rollup_state(self._session, api_key_ids)
+        else:
+            folded, watermark = {}, None
         merged: dict[str, list[float]] = {
             key_id: [
                 sums.request_count,
@@ -271,6 +276,10 @@ class ApiKeysRepository:
             for key_id, sums in folded.items()
         }
         tail_stmt = api_key_usage_aggregate_stmt(api_key_ids=api_key_ids, after_exclusive=watermark)
+        if since is not None:
+            tail_stmt = tail_stmt.where(RequestLog.requested_at >= since)
+        if until is not None:
+            tail_stmt = tail_stmt.where(RequestLog.requested_at < until)
         result = await self._session.execute(tail_stmt)
         for (
             api_key_id,

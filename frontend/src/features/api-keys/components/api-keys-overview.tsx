@@ -1,3 +1,4 @@
+import type { ApiKeyUsageWindow } from "@/features/api-keys/api";
 import { useTranslation } from "react-i18next";
 
 import type { ApiKey } from "@/features/api-keys/schemas";
@@ -147,10 +148,12 @@ function BreakdownPanel({
 
 export type ApiKeysOverviewProps = {
   apiKeys: ApiKey[];
+  usageWindow?: ApiKeyUsageWindow;
 };
 
-export function ApiKeysOverview({ apiKeys }: ApiKeysOverviewProps) {
+export function ApiKeysOverview({ apiKeys, usageWindow = "lifetime" }: ApiKeysOverviewProps) {
   const { t } = useTranslation();
+  const scope = usageWindow === "7d" ? "apiKeys.overview.recent" : "apiKeys.overview";
   const totalKeys = apiKeys.length;
   const activeKeys = apiKeys.filter((apiKey) => apiKey.isActive && !isExpired(apiKey)).length;
   const expiredKeys = apiKeys.filter((apiKey) => isExpired(apiKey)).length;
@@ -173,23 +176,23 @@ export function ApiKeysOverview({ apiKeys }: ApiKeysOverviewProps) {
         <OverviewStat label={t("apiKeys.overview.activeKeys")} value={formatCompactNumber(activeKeys)} meta={t("apiKeys.overview.inactiveMeta", { count: formatCompactNumber(inactiveKeys) })} />
         <OverviewStat label={t("apiKeys.overview.usedKeys")} value={formatCompactNumber(usedKeys)} meta={t("apiKeys.overview.idleMeta", { count: formatCompactNumber(idleKeys) })} />
         <OverviewStat
-          label={t("apiKeys.overview.lifetimeRequests")}
+          label={t(`${scope}.lifetimeRequests`)}
           value={formatCompactNumber(totalRequests)}
           meta={t("apiKeys.overview.tokensMeta", { count: formatCompactNumber(totalTokens) })}
         />
-        <OverviewStat label={t("apiKeys.overview.lifetimeCost")} value={formatCurrency(totalCostUsd)} meta={t("apiKeys.overview.lifetimeCostMeta")} />
+        <OverviewStat label={t(`${scope}.lifetimeCost`)} value={formatCurrency(totalCostUsd)} meta={t(`${scope}.lifetimeCostMeta`)} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <BreakdownPanel
-          title={t("apiKeys.overview.costByKey")}
-          subtitle={t("apiKeys.overview.costByKeySubtitle")}
+          title={t(`${scope}.costByKey`)}
+          subtitle={t(`${scope}.costByKeySubtitle`)}
           metric="cost"
           apiKeys={apiKeys}
         />
         <BreakdownPanel
-          title={t("apiKeys.overview.tokensByKey")}
-          subtitle={t("apiKeys.overview.tokensByKeySubtitle")}
+          title={t(`${scope}.tokensByKey`)}
+          subtitle={t(`${scope}.tokensByKeySubtitle`)}
           metric="tokens"
           apiKeys={apiKeys}
         />

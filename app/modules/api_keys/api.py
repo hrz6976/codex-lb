@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Body, Depends, Request, Response
+from typing import Literal
+
+from fastapi import APIRouter, Body, Depends, Query, Request, Response
 
 from app.core.audit.service import AuditActor, AuditService, AuditTarget
 from app.core.auth.dashboard_access import DashboardPrincipal, Permission
@@ -186,9 +188,10 @@ async def create_api_key(
 @router.get("", response_model=list[ApiKeyResponse], include_in_schema=False)
 @router.get("/", response_model=list[ApiKeyResponse])
 async def list_api_keys(
+    usage_window: Literal["lifetime", "7d"] = Query(default="lifetime", alias="usageWindow"),
     context: ApiKeysContext = Depends(get_api_keys_context),
 ) -> list[ApiKeyResponse]:
-    rows = await context.service.list_keys()
+    rows = await context.service.list_keys(recent_usage=usage_window == "7d")
     return [_to_response(row) for row in rows]
 
 

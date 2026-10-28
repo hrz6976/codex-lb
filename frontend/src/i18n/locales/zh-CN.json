@@ -2036,5 +2036,15 @@
   "organisation.automaticAccounts.secret.warning": "请立即复制。它只显示这一次，之后无法再查看；如果丢失，请更换凭据。",
   "organisation.automaticAccounts.secret.copy": "复制凭据",
   "organisation.errors.scim_token_not_found": "该凭据已不存在。",
-  "accounts.importDialog.selectedFiles": "已选择的文件"
+  "accounts.importDialog.selectedFiles": "已选择的文件",
+  "apiKeys.overview.window.7d": "7 天",
+  "apiKeys.overview.window.lifetime": "全部时间",
+  "apiKeys.overview.usageWindow": "用量时间范围",
+  "apiKeys.overview.recent.lifetimeRequests": "请求 · 7 天",
+  "apiKeys.overview.recent.lifetimeCost": "费用 · 7 天",
+  "apiKeys.overview.recent.lifetimeCostMeta": "最近 7 天的预估 API 费用",
+  "apiKeys.overview.recent.costByKey": "各 API 密钥费用 · 7 天",
+  "apiKeys.overview.recent.costByKeySubtitle": "最近 7 天的费用占比",
+  "apiKeys.overview.recent.tokensByKey": "各 API 密钥令牌 · 7 天",
+  "apiKeys.overview.recent.tokensByKeySubtitle": "最近 7 天的令牌占比"
 }

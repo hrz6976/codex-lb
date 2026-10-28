@@ -68,7 +68,9 @@ class ApiKeysRepositoryProtocol(Protocol):
     async def get_by_hash(self, key_hash: str) -> ApiKey | None: ...
 
     async def list_all(self) -> list[ApiKey]: ...
-    async def list_usage_summary_by_key(self) -> dict[str, ApiKeyUsageSummary]: ...
+    async def list_usage_summary_by_key(
+        self, *, since: datetime | None = None, until: datetime | None = None
+    ) -> dict[str, ApiKeyUsageSummary]: ...
     async def get_usage_summary_by_key_id(self, key_id: str) -> ApiKeyUsageSummary: ...
     async def get_limit_usage_value(
         self,
@@ -551,9 +553,15 @@ class ApiKeysService:
 
         return _to_created_data(_to_api_key_data(created), plain_key)
 
-    async def list_keys(self) -> list[ApiKeyData]:
+    async def list_keys(self, *, recent_usage: bool = False) -> list[ApiKeyData]:
         rows = await self._repository.list_all()
-        usage_summary_by_key = await self._repository.list_usage_summary_by_key()
+        if recent_usage:
+            until = utcnow()
+            usage_summary_by_key = await self._repository.list_usage_summary_by_key(
+                since=until - timedelta(days=7), until=until
+            )
+        else:
+            usage_summary_by_key = await self._repository.list_usage_summary_by_key()
 
         pooled_by_key: dict[str, PooledCreditData] = {}
         if self._usage_repository is not None:

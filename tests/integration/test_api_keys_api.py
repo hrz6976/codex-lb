@@ -4696,3 +4696,55 @@ async def test_stream_without_api_key_auth_skips_settlement(async_client, monkey
         assert response.status_code == 200
         lines = [line async for line in response.aiter_lines() if line]
         assert len(lines) >= 1  # stream completed without error
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/api-keys", "/api/api-keys/"])
+async def test_api_key_list_seven_day_window(async_client, monkeypatch, path):
+    now = utcnow()
+    monkeypatch.setattr("app.modules.api_keys.service.utcnow", lambda: now)
+    created = await async_client.post("/api/api-keys/", json={"name": "recent usage"})
+    assert created.status_code == 200
+    key_id = created.json()["id"]
+    async with SessionLocal() as session:
+        for index, (when, kind) in enumerate(
+            [
+                (now - timedelta(days=8), "normal"),
+                (now - timedelta(days=7), "normal"),
+                (now - timedelta(hours=1), "normal"),
+                (now, "normal"),
+                (now + timedelta(hours=1), "normal"),
+                (now - timedelta(hours=1), "warmup"),
+            ]
+        ):
+            session.add(
+                RequestLog(
+                    request_id=f"recent-{index}",
+                    api_key_id=key_id,
+                    model="test",
+                    requested_at=when,
+                    request_kind=kind,
+                    status="success",
+                    input_tokens=10,
+                    output_tokens=5,
+                    cached_input_tokens=3,
+                    cost_usd=1.0,
+                )
+            )
+        await session.commit()
+    recent = await async_client.get(path, params={"usageWindow": "7d"})
+    assert recent.status_code == 200
+    row = next(row for row in recent.json() if row["id"] == key_id)
+    assert row["usageSummary"] == {
+        "requestCount": 2,
+        "totalTokens": 30,
+        "cachedInputTokens": 6,
+        "totalCostUsd": 2.0,
+    }
+    lifetime = await async_client.get(path)
+    explicit = await async_client.get(path, params={"usageWindow": "lifetime"})
+    assert lifetime.json() == explicit.json()
+    row = next(row for row in lifetime.json() if row["id"] == key_id)
+    assert row["usageSummary"]["requestCount"] == 5
+    invalid = await async_client.get(path, params={"usageWindow": "weekly"})
+    assert invalid.status_code == 422

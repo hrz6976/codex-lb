@@ -1,5 +1,5 @@
 import { ShieldCheck } from "lucide-react";
-import { lazy, Suspense, useCallback, useMemo } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { AlertMessage } from "@/components/alert-message";
@@ -12,6 +12,7 @@ import type {
 	ApiKeyUpdateRequest,
 } from "@/features/api-keys/schemas";
 import { ApiKeyCreatedDialog } from "@/features/api-keys/components/api-key-created-dialog";
+import type { ApiKeyUsageWindow } from "@/features/api-keys/api";
 import { ApiKeysOverview } from "@/features/api-keys/components/api-keys-overview";
 import { ApiDetail } from "@/features/apis/components/api-detail";
 import { ApiList } from "@/features/apis/components/api-list";
@@ -42,6 +43,7 @@ export function ApisPage() {
 	// The backend answers every API-key read with 403 for principals without
 	// `api_keys:read`, so the queries stay idle and the page explains instead.
 	// Mutations still run behind the coarse write alias, so the controls follow it.
+	const [usageWindow, setUsageWindow] = useState<ApiKeyUsageWindow>("7d");
 	const canReadKeys = usePermission("api_keys:read");
 	const canWrite = useAuthStore((state) => state.canWrite);
 	const {
@@ -50,7 +52,7 @@ export function ApisPage() {
 		updateMutation,
 		deleteMutation,
 		regenerateMutation,
-	} = useApiKeys({ enabled: canReadKeys });
+	} = useApiKeys({ enabled: canReadKeys, usageWindow });
 
 	const createDialog = useDialogState();
 	const editDialog = useDialogState<ApiKey>();
@@ -169,7 +171,20 @@ export function ApisPage() {
 				</div>
 			) : (
 				<div className="space-y-6">
-					<ApiKeysOverview apiKeys={apiKeys} />
+					<div className="flex justify-end gap-2" role="group" aria-label={t("apiKeys.overview.usageWindow")}>
+						{(["7d", "lifetime"] as const).map((window) => (
+							<Button
+								key={window}
+								size="sm"
+								variant={usageWindow === window ? "default" : "outline"}
+								aria-pressed={usageWindow === window}
+								onClick={() => setUsageWindow(window)}
+							>
+								{t(`apiKeys.overview.window.${window}`)}
+							</Button>
+						))}
+					</div>
+					<ApiKeysOverview apiKeys={apiKeys} usageWindow={usageWindow} />
 
 					<div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
 						<div className="rounded-xl border bg-card p-4">

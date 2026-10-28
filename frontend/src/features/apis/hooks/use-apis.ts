@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
+  type ApiKeyUsageWindow,
   createApiKey,
   deleteApiKey,
   listApiKeys,
@@ -20,13 +21,13 @@ export type ApiKeyQueryOptions = {
   enabled?: boolean;
 };
 
-export function useApiKeys({ enabled = true }: ApiKeyQueryOptions = {}) {
+export function useApiKeys({ enabled = true, usageWindow = "lifetime" }: ApiKeyQueryOptions & { usageWindow?: ApiKeyUsageWindow } = {}) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data, error, isFetching, isLoading, isPending, isSuccess, refetch } = useQuery({
-    queryKey: ["api-keys", "list"],
-    queryFn: listApiKeys,
+    queryKey: usageWindow === "lifetime" ? ["api-keys", "list"] : ["api-keys", "list", usageWindow],
+    queryFn: () => listApiKeys(usageWindow),
     select: (data) => data,
     enabled,
     refetchInterval: 30_000,

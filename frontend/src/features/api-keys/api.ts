@@ -12,8 +12,11 @@ import {
 export const API_KEYS_BASE_PATH = "/api/api-keys";
 const MODELS_PATH = "/api/models";
 
-export function listApiKeys() {
-  return get(`${API_KEYS_BASE_PATH}/`, ApiKeyListSchema);
+export type ApiKeyUsageWindow = "7d" | "lifetime";
+
+export function listApiKeys(usageWindow: ApiKeyUsageWindow = "lifetime") {
+  const query = usageWindow === "lifetime" ? "" : `?usageWindow=${usageWindow}`;
+  return get(`${API_KEYS_BASE_PATH}/${query}`, ApiKeyListSchema);
 }
 
 export function createApiKey(payload: unknown) {

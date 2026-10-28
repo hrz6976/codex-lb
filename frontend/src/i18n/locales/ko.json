@@ -2036,5 +2036,15 @@
   "organisation.automaticAccounts.secret.warning": "지금 복사하세요. 한 번만 표시되고 다시 볼 수 없습니다. 잃어버렸다면 자격 증명을 교체하세요.",
   "organisation.automaticAccounts.secret.copy": "자격 증명 복사",
   "organisation.errors.scim_token_not_found": "그 자격 증명은 더 이상 없습니다.",
-  "accounts.importDialog.selectedFiles": "선택한 파일"
+  "accounts.importDialog.selectedFiles": "선택한 파일",
+  "apiKeys.overview.window.7d": "7일",
+  "apiKeys.overview.window.lifetime": "전체 기간",
+  "apiKeys.overview.usageWindow": "사용량 기간",
+  "apiKeys.overview.recent.lifetimeRequests": "요청 · 7일",
+  "apiKeys.overview.recent.lifetimeCost": "비용 · 7일",
+  "apiKeys.overview.recent.lifetimeCostMeta": "최근 7일 예상 API 비용",
+  "apiKeys.overview.recent.costByKey": "API 키별 비용 · 7일",
+  "apiKeys.overview.recent.costByKeySubtitle": "최근 7일 비용 비중",
+  "apiKeys.overview.recent.tokensByKey": "API 키별 토큰 · 7일",
+  "apiKeys.overview.recent.tokensByKeySubtitle": "최근 7일 토큰 비중"
 }

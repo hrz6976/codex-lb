@@ -1,0 +1,2 @@
+# API-key recent usage
+The overview compares the last 7 days rather than a calendar week. For example, a key with $100 lifetime cost and $4 during the last seven days shows $4 in 7 days and $100 in Lifetime. The default list API stays lifetime for existing clients. Warmup traffic is excluded; retained historical logs bound the available detail. No additional configuration is needed, and restricted users still cannot read key usage.
