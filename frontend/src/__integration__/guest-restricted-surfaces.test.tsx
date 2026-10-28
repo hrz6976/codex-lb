@@ -15,9 +15,8 @@ import {
 import { server } from "@/test/mocks/server";
 import { renderWithProviders } from "@/test/utils";
 
-// Reads the backend answers with 403 `permission_required` for principals
-// without the coarse `write` alias (the built-in guest). The guest UI must
-// never issue them.
+// Settings must not fetch key administration data or privileged topology.
+// Guest API inventory reads are allowed on the APIs and dashboard pages.
 const RESTRICTED_PATHS = [
   "/api/api-keys/",
   "/api/api-keys",
@@ -100,22 +99,17 @@ describe("guest restricted surfaces integration", () => {
     useAuthStore.setState({ role: "admin", permissions: ADMIN_PERMISSIONS, canWrite: true, initialized: false });
   });
 
-  it("shows the administrator-only notice on /apis without requesting API keys", async () => {
+  it("shows read-only API usage with 7 days selected for guests", async () => {
     useGuestSession();
-    const paths = spyRequestPaths();
+    const urls = spyRequestUrls();
     window.history.pushState({}, "", "/apis");
-
     renderWithProviders(<App />);
-
-    expect(await screen.findByRole("heading", { name: "APIs" })).toBeInTheDocument();
-    expect(await screen.findByText("API keys are managed by administrators")).toBeInTheDocument();
-    expect(screen.getByText("Sign in as an administrator to view and manage API keys.")).toBeInTheDocument();
-    // Header badge query proves the page settled its network work.
-    await waitFor(() => expect(paths).toContain("/api/accounts"));
-
+    expect(await screen.findByText("Cost by API Key · 7 days")).toBeInTheDocument();
+    await waitFor(() => expect(urls.some(url => url.searchParams.get("usageWindow") === "7d")).toBe(true));
     expect(screen.queryByRole("button", { name: "Create API Key" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
-    expect(restrictedRequests(paths)).toEqual([]);
+    expect(screen.queryByRole("button", { name: /Regenerate|Delete|Edit/ })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Lifetime" }));
+    expect(await screen.findByText("Lifetime Cost by API Key")).toBeInTheDocument();
   });
 
   it("does not mount or fetch API key, upstream-proxy, or sticky-session surfaces on /settings", async () => {
@@ -159,29 +153,16 @@ describe("guest restricted surfaces integration", () => {
     expect(restrictedRequests(paths)).toEqual([]);
   });
 
-  it("drops a URL-carried API-key filter and hides its control on /dashboard", async () => {
+  it("allows guests to filter request logs by API key", async () => {
     useGuestSession();
     const urls = spyRequestUrls();
     window.history.pushState({}, "", "/dashboard?apiKeyId=key_1&status=success");
-
     renderWithProviders(<App />);
-
-    expect(await screen.findByRole("heading", { name: "Request Logs" })).toBeInTheDocument();
-    await waitFor(() => {
-      const logUrls = requestLogUrls(urls);
-      expect(logUrls.some((url) => url.pathname === "/api/request-logs")).toBe(true);
-      expect(logUrls.some((url) => url.pathname === "/api/request-logs/options")).toBe(true);
-    });
-    expect(await screen.findByRole("button", { name: "Accounts" })).toBeInTheDocument();
-
-    // No log or facet request carries the hidden filter; other filters survive.
+    expect(await screen.findByRole("button", { name: "Default key · sk-test" })).toBeInTheDocument();
+    await waitFor(() => expect(requestLogUrls(urls).length).toBeGreaterThan(0));
     for (const url of requestLogUrls(urls)) {
-      expect(url.searchParams.getAll("apiKeyId")).toEqual([]);
+      expect(url.searchParams.getAll("apiKeyId")).toEqual(["key_1"]);
     }
-    expect(requestLogUrls(urls).some((url) => url.searchParams.getAll("status").includes("success"))).toBe(true);
-    expect(screen.queryByRole("button", { name: "API Keys" })).not.toBeInTheDocument();
-    // The stale parameter is removed from the address so it cannot be re-applied.
-    await waitFor(() => expect(new URL(window.location.href).searchParams.has("apiKeyId")).toBe(false));
     expect(new URL(window.location.href).searchParams.getAll("status")).toEqual(["success"]);
   });
 

@@ -64,3 +64,6 @@ Password login and TOTP verification: max 8 attempts per 60-second window per cl
 ## Audit Logging
 
 Events: `login_success`, `login_failed`, `totp_enabled`, `totp_disabled`, `settings_changed`. Stored in `audit_logs` table via `AuditService.log_async()`.
+
+## Guest API usage
+This fork exposes the read-only API inventory to guests so visitors can compare recent seven-day usage. For example, a guest can compare key cost and filter request logs by key, but cannot regenerate a key. Key names, prefixes, limits and assignments are visible; plaintext keys are never returned by reads. Account emails in usage details use the same masking as account lists. Viewer grants are unchanged.

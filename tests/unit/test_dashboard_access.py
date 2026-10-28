@@ -48,6 +48,7 @@ def test_guest_preset_is_read_only_telemetry() -> None:
     assert dict(GUEST_GRANTS) == {
         Permission.DASHBOARD_READ: Scope.ALL,
         Permission.ACCOUNTS_READ: Scope.ALL,
+        Permission.API_KEYS_READ: Scope.ALL,
     }
     assert ROLE_GRANTS[DashboardRole.GUEST] is GUEST_GRANTS
 

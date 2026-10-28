@@ -377,7 +377,7 @@ async def test_me_requires_a_user_account(async_client, app_instance):
         assert login.json()["role"] == "guest"
         assert login.json()["accessSummary"] is None
         assert login.json()["user"] is None
-        assert login.json()["permissions"] == ["read", "accounts:read:all", "dashboard:read:all"]
+        assert login.json()["permissions"] == ["read", "accounts:read:all", "api_keys:read:all", "dashboard:read:all"]
         me = await guest.get("/api/dashboard-auth/me")
         assert me.status_code == 401
         assert me.json()["error"]["code"] == "user_account_required"

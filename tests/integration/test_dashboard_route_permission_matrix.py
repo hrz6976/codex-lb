@@ -73,7 +73,7 @@ EXPECTED_REQUIREMENTS: dict[tuple[str, str], PermissionRequirement] = {
     ("POST", "/api/firewall/ips"): PermissionRequirement(Permission.SECURITY_WRITE),
     ("DELETE", "/api/firewall/ips/{ip_address}"): PermissionRequirement(Permission.SECURITY_WRITE),
     ("POST", "/api/settings/upstream-proxy/endpoints"): PermissionRequirement(Permission.SECURITY_WRITE),
-    # Guest-restricted reads (PR-0a-2): inventories and topology are not guest-safe.
+    # Inventory reads include guests; topology reads remain privileged.
     ("GET", "/api/api-keys"): PermissionRequirement(Permission.API_KEYS_READ),
     ("GET", "/api/api-keys/"): PermissionRequirement(Permission.API_KEYS_READ),
     ("GET", "/api/api-keys/{key_id}/trends"): PermissionRequirement(Permission.API_KEYS_READ),
@@ -137,6 +137,7 @@ EXPECTED_REQUIREMENTS: dict[tuple[str, str], PermissionRequirement] = {
 #: security field (handler-level, covered by ``test_step_up_auth.py``).
 STEP_UP_GATED: frozenset[tuple[str, str]] = frozenset(
     {
+        ("PUT", "/api/settings/notifications"),
         # ``POST /api/accounts/{id}/export`` and ``.../export/opencode-auth`` are the
         # retired predecessors that ``unified-auth-export`` forbids serving; only the
         # single export route below exists.

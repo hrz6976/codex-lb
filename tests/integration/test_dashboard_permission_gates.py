@@ -331,7 +331,7 @@ async def test_guest_request_log_search_does_not_match_account_email(
 
 
 @pytest.mark.asyncio
-async def test_guest_request_log_options_omit_api_key_inventory(
+async def test_principal_without_api_read_cannot_discover_key_inventory(
     app_instance: FastAPI, async_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from datetime import UTC, datetime
@@ -359,7 +359,7 @@ async def test_guest_request_log_options_omit_api_key_inventory(
     assert admin_options.status_code == 200
     assert [key["name"] for key in admin_options.json()["apiKeys"]] == ["inventory-key"]
 
-    _use_principal(app_instance, monkeypatch, guest_principal())
+    _use_principal(app_instance, monkeypatch, _principal_with_only(dashboard__read=Scope.ALL, accounts__read=Scope.ALL))
     guest_options = await async_client.get("/api/request-logs/options")
     assert guest_options.status_code == 200
     guest_payload = guest_options.json()
@@ -423,15 +423,12 @@ async def test_request_log_count_cache_is_keyed_by_identity_visibility(
 
 
 @pytest.mark.asyncio
-async def test_guest_cannot_read_inventory_and_topology_surfaces(
+async def test_guest_cannot_read_privileged_topology_surfaces(
     app_instance: FastAPI, async_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _use_principal(app_instance, monkeypatch, guest_principal())
 
     for path, permission in (
-        ("/api/api-keys/", Permission.API_KEYS_READ),
-        ("/api/api-keys/some-key/trends", Permission.API_KEYS_READ),
-        ("/api/api-keys/some-key/usage-7d", Permission.API_KEYS_READ),
         ("/api/settings/upstream-proxy", Permission.OPS_WRITE),
         ("/api/settings/runtime/connect-address", Permission.OPS_WRITE),
         ("/api/sticky-sessions", Permission.OPS_WRITE),
@@ -443,3 +440,60 @@ async def test_guest_cannot_read_inventory_and_topology_surfaces(
     for path in ("/api/usage/summary", "/api/reports", "/api/request-logs", "/api/models"):
         response = await async_client.get(path)
         assert response.status_code == 200, (path, response.text)
+
+
+@pytest.mark.asyncio
+async def test_guest_reads_api_usage_but_cannot_mutate_keys(
+    app_instance: FastAPI, async_client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.core.utils.time import utcnow
+    from app.db.models import RequestLog
+    from app.db.session import SessionLocal
+
+    _use_principal(app_instance, monkeypatch, admin_principal(auth_mode=DashboardAuthMode.STANDARD))
+    account_id = await _seed_account()
+    created = await async_client.post("/api/api-keys/", json={"name": "guest-visible-key"})
+    assert created.status_code in (200, 201), created.text
+    key_id = created.json()["id"]
+    secret = created.json()["key"]
+    async with SessionLocal() as session:
+        session.add(
+            RequestLog(
+                account_id=account_id,
+                api_key_id=key_id,
+                request_id="guest-usage",
+                cost_usd=0.5,
+                model="gpt-5",
+                status="success",
+                requested_at=utcnow(),
+                input_tokens=100,
+            )
+        )
+        await session.commit()
+    _use_principal(app_instance, monkeypatch, guest_principal())
+    for path in ("/api/api-keys", "/api/api-keys/"):
+        response = await async_client.get(path, params={"usageWindow": "7d"})
+        assert response.status_code == 200, response.text
+        assert response.json()[0]["usageSummary"]["requestCount"] == 1
+        assert secret not in response.text
+    assert (await async_client.get(f"/api/api-keys/{key_id}/trends")).status_code == 200
+    usage = await async_client.get(f"/api/api-keys/{key_id}/usage-7d")
+    assert usage.status_code == 200, usage.text
+    assert usage.json()["totalRequests"] == 1
+    logs = await async_client.get("/api/request-logs", params={"apiKeyId": key_id})
+    assert logs.status_code == 200, logs.text
+    assert logs.json()["total"] == 1
+    assert usage.json()["accountCosts"][0]["email"] == "a***@example.com"
+    for method, path, body in (
+        ("POST", "/api/api-keys/", {"name": "forbidden"}),
+        ("PATCH", f"/api/api-keys/{key_id}", {"name": "forbidden"}),
+        ("POST", f"/api/api-keys/{key_id}/regenerate", {}),
+        ("DELETE", f"/api/api-keys/{key_id}", None),
+        ("PUT", "/api/settings/notifications", {"barkUrl": None}),
+    ):
+        response = await async_client.request(method, path, json=body)
+        assert response.status_code == 403, response.text
+    assert (await async_client.get("/api/settings/notifications")).status_code == 403
+    keys = (await async_client.get("/api/api-keys/")).json()
+    assert len(keys) == 1
+    assert keys[0]["name"] == "guest-visible-key"

@@ -77,7 +77,7 @@ def test_preset_grant_tables_match_the_plan() -> None:
     }
     assert set(MEMBER_GRANTS) <= OWN_SCOPED_PERMISSIONS
     assert dict(VIEWER_GRANTS) == {Permission.DASHBOARD_READ: Scope.ALL, Permission.ACCOUNTS_READ: Scope.ALL}
-    assert GUEST_GRANTS == VIEWER_GRANTS
+    assert dict(GUEST_GRANTS) == {**VIEWER_GRANTS, Permission.API_KEYS_READ: Scope.ALL}
     # Only admin and operator hold the coarse write alias; member's own-scoped
     # key writes must not pass the generic write gate.
     assert legacy_permissions(OPERATOR_GRANTS) == legacy_permissions(ADMIN_GRANTS)

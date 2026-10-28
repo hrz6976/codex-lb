@@ -675,7 +675,12 @@ async def test_passwordless_guest_access_allows_remote_reads_and_blocks_writes(a
             session_payload = session.json()
             assert session_payload["authenticated"] is True
             assert session_payload["role"] == "guest"
-            assert session_payload["permissions"] == ["read", "accounts:read:all", "dashboard:read:all"]
+            assert session_payload["permissions"] == [
+                "read",
+                "accounts:read:all",
+                "api_keys:read:all",
+                "dashboard:read:all",
+            ]
             assert session_payload["guestAccessEnabled"] is True
             assert session_payload["guestPasswordRequired"] is False
 
@@ -787,14 +792,24 @@ async def test_guest_password_login_allows_remote_reads_and_blocks_writes(app_in
             login_payload = login.json()
             assert login_payload["authenticated"] is True
             assert login_payload["role"] == "guest"
-            assert login_payload["permissions"] == ["read", "accounts:read:all", "dashboard:read:all"]
+            assert login_payload["permissions"] == [
+                "read",
+                "accounts:read:all",
+                "api_keys:read:all",
+                "dashboard:read:all",
+            ]
 
             refresh = await remote_client.get("/api/dashboard-auth/session")
             assert refresh.status_code == 200
             refresh_payload = refresh.json()
             assert refresh_payload["authenticated"] is True
             assert refresh_payload["role"] == "guest"
-            assert refresh_payload["permissions"] == ["read", "accounts:read:all", "dashboard:read:all"]
+            assert refresh_payload["permissions"] == [
+                "read",
+                "accounts:read:all",
+                "api_keys:read:all",
+                "dashboard:read:all",
+            ]
             assert refresh_payload["guestAccessEnabled"] is True
             assert refresh_payload["guestPasswordRequired"] is True
 

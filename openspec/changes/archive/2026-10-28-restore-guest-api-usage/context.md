@@ -1,0 +1,1 @@
+This instance uses anonymous guests and an administrator. For example, a guest can compare requests and cost across keys for the last seven days, but must sign in as admin to regenerate a key. The existing API read permission also enables API-key request-log filters. Signed-in viewer grants remain unchanged.

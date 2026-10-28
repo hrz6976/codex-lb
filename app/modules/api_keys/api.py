@@ -13,6 +13,7 @@ from app.core.auth.dependencies import (
     validate_dashboard_session,
 )
 from app.core.exceptions import DashboardBadRequestError, DashboardConflictError, DashboardNotFoundError
+from app.core.utils.masking import mask_email
 from app.dependencies import ApiKeysContext, get_api_keys_context
 from app.modules.api_keys.repository import ApiKeyOwnerDisabledError
 from app.modules.api_keys.schemas import (
@@ -40,8 +41,7 @@ router = APIRouter(
     tags=["dashboard"],
     dependencies=[
         Depends(validate_dashboard_session),
-        # The key inventory (policies, assignments, limits, usage) is not a
-        # guest-safe read; every route here needs api_keys:read at minimum.
+        # Inventory and usage reads are shared with read-only guests.
         Depends(require_dashboard_permission(Permission.API_KEYS_READ)),
         Depends(set_dashboard_error_format),
     ],
@@ -324,6 +324,7 @@ async def get_api_key_trends(
 @router.get("/{key_id}/usage-7d", response_model=ApiKeyUsage7DayResponse)
 async def get_api_key_usage_7d(
     key_id: str,
+    principal: DashboardPrincipal = Depends(validate_dashboard_session),
     context: ApiKeysContext = Depends(get_api_keys_context),
 ) -> ApiKeyUsage7DayResponse:
     result = await context.service.get_key_usage_7d(key_id)
@@ -338,7 +339,7 @@ async def get_api_key_usage_7d(
         account_costs=[
             ApiKeyAccountCostResponse(
                 account_id=ac.account_id,
-                email=ac.email,
+                email=mask_email(ac.email) if ac.email and not principal.has(Permission.ACCOUNTS_WRITE) else ac.email,
                 cost_usd=ac.cost_usd,
                 is_deleted=ac.is_deleted,
             )

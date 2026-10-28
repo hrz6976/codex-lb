@@ -552,7 +552,7 @@ export const OPERATOR_PERMISSIONS: string[] = [
 
 export const VIEWER_PERMISSIONS: string[] = ["read", "accounts:read:all", "dashboard:read:all"];
 
-export const GUEST_PERMISSIONS: string[] = VIEWER_PERMISSIONS;
+export const GUEST_PERMISSIONS: string[] = [...VIEWER_PERMISSIONS, "api_keys:read:all"];
 
 export function createSessionUser(overrides: Partial<AuthSessionUser> = {}): AuthSessionUser {
 	return {

@@ -194,7 +194,7 @@ VIEWER_GRANTS: Grants = _grants(
         Permission.ACCOUNTS_READ: Scope.ALL,
     }
 )
-GUEST_GRANTS: Grants = VIEWER_GRANTS
+GUEST_GRANTS: Grants = _grants({**VIEWER_GRANTS, Permission.API_KEYS_READ: Scope.ALL})
 
 #: Grants of every preset role. The database stores preset *rows* (for foreign
 #: keys and listings) but never their grants: this table is the single truth,
